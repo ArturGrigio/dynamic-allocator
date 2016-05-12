@@ -1,28 +1,19 @@
-/*
- * memlib.c - a module that simulates the memory system.  Needed
- * because it allows us to interleave calls from the student's malloc
- * package with the system's malloc package in libc.
- *
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
-//#include <sys/mman.h>
+#include <sys/mman.h>
 #include <string.h>
 #include <errno.h>
 
-#define MAX_HEAP 20*(1<<20)
-//#include "csapp.h"
-//#include "memlib.h"
-//#include "config.h"
+#include "memlib.h"
 
 /* $begin memlib */
 /* Private global variables */
 static char *mem_heap;     /* Points to first byte of heap */ 
 static char *mem_brk;      /* Points to last byte of heap plus 1 */
-static char *mem_max_addr; /* Max legal heap addr plus 1*/ 
-
+static char *mem_max_addr; /* Max legal heap addr plus 1*/
+#define MAX_HEAP (20*(1<<20))  /* 20 MB */
 /* 
  * mem_init - Initialize the memory system model
  */
