@@ -6,6 +6,9 @@
 #include "memlib.c"
 
 
+#define	MAXLINE	100
+#define MAXARGS 100
+
 ////////////////////////
 //    DECLARATIONS    //
 ////////////////////////
@@ -27,157 +30,178 @@ void writeheap(int bnum, char letter, int copies);
 void printheap(int bnum, size_t size);
 
 
+
+int eval(char *cmdline);
+int program_command(char **argv);
+int parseline(char *buf, char **argv);
+
+
+
 ////////////////
 //    MAIN    //
 ////////////////
 int main(){
 
-    mem_init();
-    first_block = mm_malloc(1);
-    mm_free(first_block);
+	mem_init();
+	first_block = mm_malloc(1);
+	mm_free(first_block);
 
-    // running boolean
-    int exit = 0;
-
-    while(exit == 0)
-    {
-        printf("> ");
-        char command[80];
-        fgets(command, 256, stdin);
-
-        if ( check_command(command, "quit") == 1) {
-            exit = 1;
-        } else {
-            char *arguments[80];
-            int number_of_args = 1;
-
-            int i;
-            for(i = 0; i < strlen(command); i++){
-                if(command[i] != ' '){
-                    char *file_name;
-                    char *rest_of_command;
-                    char *temp;
-
-                    file_name = strtok_r(command, " ", &rest_of_command);
-                    arguments[0] = file_name;
-                    char *token2;
-
-                    // arguments
-                    for (temp = command; ; temp = NULL) {
-                        token2 = strtok_r(NULL, " ", &rest_of_command);
-                        if (token2 == NULL)
-                            break;
-                        else{
-                            arguments[number_of_args] = token2;
-                            number_of_args++;
-                        }
-                    }
-
-                    i = strlen(command);
-                } // end !command[i] == ' '
-            } // end for loop
-
-            if(check_command(arguments[0], "allocate")){
-                int block_size = atoi(arguments[1]); // ASK TA IF WE'LL BE PASSED BAD INPUT
-                alloc_block[alloc_n] = allocate(block_size);
-            }
-            else if(check_command(arguments[0], "free")){
-                int block_number = atoi(arguments[1]);
-                freeblock(block_number);
-            }
-            else if(check_command(arguments[0], "blocklist")){
-                blocklist();
-            }
-            else if(check_command(arguments[0], "writeheap")){
-                int block_number = atoi(arguments[1]);
-                char letter = arguments[2][0];
-                int copies = atoi(arguments[3]);
-
-                writeheap(block_number, letter, copies);
-            }
-            else if(check_command(arguments[0], "printheap")){
-                int block_number = atoi(arguments[1]);
-                size_t size = atoi(arguments[2]);
-
-                printheap(block_number, size);
-            }
-        } // end all other statements that are not quit
-    }
+	char cmdline[MAXLINE]; /* Command line */
+	do {
+		printf("> ");
+		fgets(cmdline, MAXLINE, stdin);
+	} while (eval(cmdline));
 } // end main
 
-int check_command(char input[], char command[]){
-    int return_value = 0;
 
-    int length;
-    length = strlen(command);
+int eval(char *cmdline) {
+	char *argv[MAXARGS];
+	char buf[MAXLINE];
+	int bg;
 
-    char substring[length];
+	/* Argument list*/
+	strcpy(buf, cmdline);
+	bg = parseline(buf, argv);
+	if (argv[0] == NULL)
+		return 1;   /* Ignore empty lines */
+	if (!program_command(argv))
+		return 0;
 
-    int i;
-    for(i = 0; i < length; i++){
-        substring[i] = input[i];
-    };
-    substring[length] = '\0';
-
-
-    if( strcmp( substring, command ) == 0){
-        return_value = 1;
-    }
-    return return_value;
+	return 1;
 }
 
+
+int program_command(char **argv) {
+	if (strcmp(argv[0], "allocate") == 0){
+		if(argv[1] == NULL)
+			printf("Error: no arguments for allocate\n");
+		else {
+			int block_size = atoi(argv[1]);
+			alloc_block[alloc_n] = allocate(block_size);
+		}
+		return 1;
+	}
+	else if (strcmp(argv[0], "free") == 0){
+		if(argv[1] == NULL)
+			printf("Error: no arguments for free\n");
+		else {
+			int block_number = atoi(argv[1]);
+			freeblock(block_number);
+		}
+		return 1;
+	}
+	else if (strcmp(argv[0], "blocklist") == 0){
+		blocklist();
+		return 1;
+	}
+	else if (strcmp(argv[0], "writeheap") == 0){
+		if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL)
+			printf("Error: wrong arguments for writeheap\n");
+		else {
+			int block_number = atoi(argv[1]);
+			char letter = argv[2][0];
+			int copies = atoi(argv[3]);
+			writeheap(block_number, letter, copies);
+		}
+		return 1;
+	}
+	else if(strcmp(argv[0], "printheap") == 0){
+		if (argv[1] == NULL || argv[2] == NULL)
+			printf("Error: wrong arguments for printheap\n");
+		else {
+			int block_number = atoi(argv[1]);
+			size_t size = atoi(argv[2]);
+			printheap(block_number, size);
+		}
+		return 1;
+	}
+	else if (strcmp(argv[0], "quit") == 0) /* quit command */
+		return 0;
+	else {
+		printf("%s: Command not found.\n", argv[0]);
+		return 1;
+	}
+
+}
+
+/* parseline - Parse the command line and build the argv array */
+int parseline(char *buf, char **argv) {
+	char *delim;
+	int argc;
+	int bg;
+	buf[strlen(buf)-1] = ' ';
+	while (*buf && (*buf == ' ' ))
+		buf++;
+	/* Build the argv list */
+	argc = 0;
+	while ((delim = strchr(buf, ' '))) {
+		argv[argc++] = buf;
+		*delim = '\0';
+		buf = delim + 1;
+		while (*buf && (*buf == ' '))
+			buf++;
+	}
+	argv[argc] = NULL;
+	if (argc == 0)
+		return 1;
+	if ((bg = (*argv[argc-1] == '&')) != 0)
+		argv[--argc] = NULL;
+	return bg;
+}
+
+
 void *allocate(size_t size) {
-    void *bp;
-    bp = mm_malloc(size);
-    printf("%d\n", ++alloc_n);
-    return bp;
+	void *bp;
+	bp = mm_malloc(size);
+	printf("%d\n", ++alloc_n);
+	return bp;
 }
 
 void freeblock(int bnum) {
-    if (bnum <= 0 || bnum > alloc_n) {
-        printf("Invalid Block Number\n");
-        return;
-    }
-    mm_free(alloc_block[bnum]);
+	if (bnum <= 0 || bnum > alloc_n) {
+		printf("Invalid Block Number\n");
+		return;
+	}
+	mm_free(alloc_block[bnum]);
 }
 
 void blocklist(void) {
-    void *bp;
-    printf("Size  Allocated   Start           End\n");
-    for (bp = first_block; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
-        printf("%-5d %-11s %-#15x %-#15x\n", GET_SIZE(HDRP(bp)),
-               GET_ALLOC(HDRP(bp)) ? "yes" : "no",
-               HDRP(bp), FTRP(bp)+3);
+	void *bp;
+	printf("Size  Allocated   Start           End\n");
+	for (bp = first_block; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
+		printf("%-5d %-11s %-#15x %-#15x\n", GET_SIZE(HDRP(bp)),
+			   GET_ALLOC(HDRP(bp)) ? "yes" : "no",
+			   HDRP(bp), FTRP(bp)+3);
 }
 
 void writeheap(int bnum, char letter, int copies) {
-    if (bnum <= 0 || bnum > alloc_n || !GET_ALLOC(HDRP(alloc_block[bnum]))) {
-        printf("Invalid Block Number\n");
-        return;
-    }
-    int i;
-    void *p;
-    void *bp = alloc_block[bnum];
-    for (i = 0, p = bp; (i < copies) && (p != FTRP(bp)); ++i, ++p)
-        PUT(p, letter);
+	if (bnum <= 0 || bnum > alloc_n || !GET_ALLOC(HDRP(alloc_block[bnum]))) {
+		printf("Invalid Block Number\n");
+		return;
+	}
+	int i;
+	void *p;
+	void *bp = alloc_block[bnum];
+	for (i = 0, p = bp; (i < copies) && (p != FTRP(bp)); ++i, ++p)
+		PUT(p, letter);
 }
 
 void printheap(int bnum, size_t size) {
-    if (bnum <= 0 || bnum > alloc_n) {
-        printf("Invalid Block Number\n");
-        return;
-    }
-    int i;
-    void *p;
-    void *bp = alloc_block[bnum];
-    for (p = bp, i = 0; i < size && GET_SIZE(HDRP(bp)) > 0; ++i){
-        if(p == FTRP(bp)){
-            bp = NEXT_BLKP(bp);
-            p = bp;
-        }
-        printf("%c", GET(p));
-        ++p;
-    }
+	if (bnum <= 0 || bnum > alloc_n) {
+		printf("Invalid Block Number\n");
+		return;
+	}
+	int i;
+	void *p;
+	void *bp = alloc_block[bnum];
+	for (p = bp, i = 0; i < size && GET_SIZE(HDRP(bp)) > 0; ++i){
+		if(p == FTRP(bp)){
+			bp = NEXT_BLKP(bp);
+			p = bp;
+		}
+		printf("%c", GET(p));
+		++p;
+	}
 
-    printf("\n");
+	printf("\n");
 }
