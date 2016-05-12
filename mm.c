@@ -115,7 +115,7 @@ void mm_free(void *bp)
     size_t size = GET_SIZE(HDRP(bp));
 
     if (heap_listp == 0){
-	mm_init();
+	    mm_init();
     }
 
     PUT(HDRP(bp), PACK(size, 0));

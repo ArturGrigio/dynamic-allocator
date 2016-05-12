@@ -8,7 +8,6 @@
 
 #include "memlib.h"
 
-/* $begin memlib */
 /* Private global variables */
 static char *mem_heap;     /* Points to first byte of heap */ 
 static char *mem_brk;      /* Points to last byte of heap plus 1 */
