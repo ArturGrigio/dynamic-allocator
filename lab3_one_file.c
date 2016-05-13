@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
-
 #include <assert.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -11,32 +10,20 @@
 
 #define	MAXLINE	100
 #define MAXARGS 100
-
 #define MAX_HEAP ((1<<9))  /* Heap will never grow */
-
-/* Basic constants and macros */
-#define WSIZE       4       /* Word and header/footer size (bytes) */ //line:vm:mm:beginconst
+#define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
-#define CHUNKSIZE  ((1<<8)+144) /* Extend heap by this amount (bytes) */  //line:vm:mm:endconst
-
+#define CHUNKSIZE  ((1<<8)+144) /* Extend heap by this amount (bytes) initially */
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 
-/* Pack a size and allocated bit into a word */
+// PACK GET PUT ... FROM BOOK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define PACK(size, alloc)  ((size) | (alloc)) //line:vm:mm:pack
-
-/* Read and write a word at address p */
 #define GET(p)       (*(unsigned int *)(p))            //line:vm:mm:get
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))    //line:vm:mm:put
-
-/* Read the size and allocated fields from address p */
 #define GET_SIZE(p)  (GET(p) & ~0x3)                   //line:vm:mm:getsize
 #define GET_ALLOC(p) (GET(p) & 0x1)                    //line:vm:mm:getalloc
-
-/* Given block ptr bp, compute address of its header and footer */
 #define HDRP(bp)       ((char *)(bp) - WSIZE)                      //line:vm:mm:hdrp
 #define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE) //line:vm:mm:ftrp
-
-/* Given block ptr bp, compute address of next and previous blocks */
 #define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE))) //line:vm:mm:nextblkp
 #define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) //line:vm:mm:prevblkp
 
@@ -50,8 +37,6 @@ static char *mem_max_addr; /* Max legal heap addr plus 1*/
 static char *heap_listp = 0;  /* Pointer to first block */
 extern int place_pol;
 
-
-
 /* Function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
 static void place(void *bp, size_t asize);
@@ -60,6 +45,20 @@ static void *coalesce(void *bp);
 static void printblock(void *bp);
 static void checkheap(int verbose);
 static void checkblock(void *bp);
+int place_pol = 0;
+
+void *allocate(size_t size);
+void freeblock(int bnum);
+void blocklist(void);
+void writeheap(int bnum, char letter, int copies);
+void printheap(int bnum, size_t size);
+static int alloc_n = 0;
+static char *first_block = 0;
+static char *alloc_block[MAX_HEAP];
+
+int eval(char *cmdline);
+int program_command(char **argv);
+int parseline(char *buf, char **argv);
 
 void mem_init(void);
 void *mem_sbrk(int incr);
@@ -73,42 +72,6 @@ void mm_free(void *bp);
 void mm_checkheap(int verbose);
 void *mm_realloc(void *ptr, size_t size);
 
-///* Unused. Just to keep us compatible with the 15-213 malloc driver */
-//typedef struct {
-//	char *team;
-//	char *name1, *email1;
-//	char *name2, *email2;
-//} team_t;
-//
-//extern team_t team;
-
-
-/////////////////
-////constants////
-//from memlib.c//
-/////////////////
-
-
-
-
-
-
-/////////////////
-////constants////
-////from mm.c////
-/////////////////
-
-
-
-
-/////////////////
-////functions////
-//from memlib.c//
-/////////////////
-
-/*
- * mem_init - Initialize the memory system model
- */
 void mem_init(void)
 {
 	mem_heap = (char *)malloc(MAX_HEAP);
@@ -116,11 +79,6 @@ void mem_init(void)
 	mem_max_addr = (char *)(mem_heap + MAX_HEAP);
 }
 
-/*
- * mem_sbrk - Simple model of the sbrk function. Extends the heap
- *    by incr bytes and returns the start address of the new area. In
- *    this model, the heap cannot be shrunk.
- */
 void *mem_sbrk(int incr)
 {
 	char *old_brk = mem_brk;
@@ -133,65 +91,15 @@ void *mem_sbrk(int incr)
 	mem_brk += incr;
 	return (void *)old_brk;
 }
-/* $end memlib */
 
-/*
- * mem_deinit - free the storage used by the memory system model
- */
-void mem_deinit(void)
-{
-	free(mem_heap);
-}
+void mem_deinit(void) { free(mem_heap); }
+void mem_reset_brk() { mem_brk = (char *)mem_heap; }
+void *mem_heap_lo() { return (void *)mem_heap; }
+void *mem_heap_hi() { return (void *)(mem_brk - 1); }
+size_t mem_heapsize() { return (size_t)((void *)mem_brk - (void *)mem_heap); }
+size_t mem_pagesize() { return (size_t)getpagesize(); }
 
-/*
- * mem_reset_brk - reset the simulated brk pointer to make an empty heap
- */
-void mem_reset_brk()
-{
-	mem_brk = (char *)mem_heap;
-}
-
-/*
- * mem_heap_lo - return address of the first heap byte
- */
-void *mem_heap_lo()
-{
-	return (void *)mem_heap;
-}
-
-/*
- * mem_heap_hi - return address of last heap byte
- */
-void *mem_heap_hi()
-{
-	return (void *)(mem_brk - 1);
-}
-
-/*
- * mem_heapsize() - returns the heap size in bytes
- */
-size_t mem_heapsize()
-{
-	return (size_t)((void *)mem_brk - (void *)mem_heap);
-}
-
-/*
- * mem_pagesize() - returns the page size of the system
- */
-size_t mem_pagesize()
-{
-	return (size_t)getpagesize();
-}
-
-
-
-/////////////////
-////functions////
-////from mm.c////
-/////////////////
-/*
- * mm_init - Initialize the memory manager
- */
+// CODE FROM BOOK FOR mm.c !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int mm_init(void)
 {
 	/* Create the initial empty heap */
@@ -207,10 +115,6 @@ int mm_init(void)
 		return -1;
 	return 0;
 }
-
-/*
- * mm_malloc - Allocate a block with at least size bytes of payload
- */
 
 void *mm_malloc(size_t size)
 {
@@ -241,17 +145,16 @@ void *mm_malloc(size_t size)
 		return bp;
 	}
 
-	/* No fit found. Get more memory and place the block */
-	extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
-	if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
-		return NULL;                                  //line:vm:mm:growheap2
-	place(bp, asize);                                 //line:vm:mm:growheap3
-	return bp;
+	/* No fit found. Well... youre fucked */
+	printf("Out of Memory\n");
+	return NULL;
+//	extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
+//	if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
+//		return NULL;                                  //line:vm:mm:growheap2
+//	place(bp, asize);                                 //line:vm:mm:growheap3
+//	return bp;
 }
 
-/*
- * mm_free - Free a block
- */
 void mm_free(void *bp)
 {
 	if(bp == 0)
@@ -268,9 +171,6 @@ void mm_free(void *bp)
 	coalesce(bp);
 }
 
-/*
- * coalesce - Boundary tag coalescing. Return ptr to coalesced block
- */
 static void *coalesce(void *bp)
 {
 	size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
@@ -305,9 +205,6 @@ static void *coalesce(void *bp)
 	return bp;
 }
 
-/*
- * mm_realloc - Naive implementation of realloc
- */
 void *mm_realloc(void *ptr, size_t size)
 {
 	size_t oldsize;
@@ -342,20 +239,11 @@ void *mm_realloc(void *ptr, size_t size)
 	return newptr;
 }
 
-/*
- * checkheap - We don't check anything right now.
- */
 void mm_checkheap(int verbose)
 {
+	// TO DO
 }
 
-/*
- * The remaining routines are internal helper routines
- */
-
-/*
- * extend_heap - Extend heap with free block and return its block pointer
- */
 static void *extend_heap(size_t words)
 {
 	char *bp;
@@ -370,14 +258,10 @@ static void *extend_heap(size_t words)
 	PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */   //line:vm:mm:freeblockftr
 	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */ //line:vm:mm:newepihdr
 
-	/* Coalesce if the previous block was free */
-	return coalesce(bp);                                          //line:vm:mm:returnblock
+	/* Coalesce if the previous block was free, 1 TA SAID IT'S OK, REQ DOC SAYS NOTHING ABOUT IT */
+	return coalesce(bp);
 }
 
-/*
- * place - Place block of asize bytes at start of free block bp
- *         and split if remainder would be at least minimum block size
- */
 static void place(void *bp, size_t asize)
 {
 	size_t csize = GET_SIZE(HDRP(bp));
@@ -395,9 +279,6 @@ static void place(void *bp, size_t asize)
 	}
 }
 
-/*
- * find_fit - Find a fit for a block with asize bytes
- */
 static void *find_fit(size_t asize)
 {
 	if (place_pol == 0) {
@@ -454,9 +335,6 @@ static void checkblock(void *bp)
 		printf("Error: header does not match footer\n");
 }
 
-/*
- * checkheap - Minimal check of the heap for consistency
- */
 void checkheap(int verbose)
 {
 	char *bp = heap_listp;
@@ -481,38 +359,9 @@ void checkheap(int verbose)
 }
 
 
-
-////////////////////////
-//    DECLARATIONS    //
-////////////////////////
+// MAIN LIBRARY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int check_command(char input[], char command[]);
 
-static int alloc_n = 0;
-static char *first_block = 0;
-static char *alloc_block[MAX_HEAP];
-
-extern int mm_init(void);
-extern void *mm_malloc(size_t size);
-extern void mm_free(void *ptr);
-int place_pol = 0;
-
-void *allocate(size_t size);
-void freeblock(int bnum);
-void blocklist(void);
-void writeheap(int bnum, char letter, int copies);
-void printheap(int bnum, size_t size);
-
-
-
-int eval(char *cmdline);
-int program_command(char **argv);
-int parseline(char *buf, char **argv);
-
-
-
-////////////////
-//    MAIN    //
-////////////////
 int main(){
 
 	mem_init();
@@ -555,8 +404,7 @@ int program_command(char **argv) {
 			alloc_block[alloc_n] = allocate(block_size);
 		}
 		return 1;
-	}
-	else if (strcmp(argv[0], "free") == 0){
+	} else if (strcmp(argv[0], "free") == 0){
 		if(argv[1] == NULL)
 			printf("Error: no arguments for free\n");
 		else {
@@ -564,12 +412,10 @@ int program_command(char **argv) {
 			freeblock(block_number);
 		}
 		return 1;
-	}
-	else if (strcmp(argv[0], "blocklist") == 0){
+	} else if (strcmp(argv[0], "blocklist") == 0){
 		blocklist();
 		return 1;
-	}
-	else if (strcmp(argv[0], "writeheap") == 0){
+	} else if (strcmp(argv[0], "writeheap") == 0){
 		if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL)
 			printf("Error: wrong arguments for writeheap\n");
 		else {
@@ -579,8 +425,7 @@ int program_command(char **argv) {
 			writeheap(block_number, letter, copies);
 		}
 		return 1;
-	}
-	else if(strcmp(argv[0], "printheap") == 0){
+	} else if(strcmp(argv[0], "printheap") == 0){
 		if (argv[1] == NULL || argv[2] == NULL)
 			printf("Error: wrong arguments for printheap\n");
 		else {
@@ -589,10 +434,9 @@ int program_command(char **argv) {
 			printheap(block_number, size);
 		}
 		return 1;
-	}
-	else if (strcmp(argv[0], "quit") == 0) /* quit command */
+	} else if (strcmp(argv[0], "quit") == 0) { /* quit command */
 		return 0;
-	else {
+	} else {
 		printf("%s: Command not found.\n", argv[0]);
 		return 1;
 	}
@@ -628,7 +472,8 @@ int parseline(char *buf, char **argv) {
 void *allocate(size_t size) {
 	void *bp;
 	bp = mm_malloc(size);
-	printf("%d\n", ++alloc_n);
+	if(bp)
+		printf("%d\n", ++alloc_n);
 	return bp;
 }
 
@@ -646,7 +491,7 @@ void blocklist(void) {
 	for (bp = first_block; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
 		printf("%-5d %-11s %-#15x %-#15x\n", GET_SIZE(HDRP(bp)),
 			   GET_ALLOC(HDRP(bp)) ? "yes" : "no",
-			   HDRP(bp), FTRP(bp)+3);
+			   HDRP(bp), FTRP(bp)+4);
 }
 
 void writeheap(int bnum, char letter, int copies) {
