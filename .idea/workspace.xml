@@ -12,11 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a0eef9e-218f-40f9-a7f6-7280cd340f57" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Lab3_Anya_Version.c" afterPath="$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dynamic-allocator.iml" afterPath="$PROJECT_DIR$/.idea/dynamic-allocator.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lab3_one_file.c" afterPath="$PROJECT_DIR$/lab3_one_file.c" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c" afterPath="$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c" />
     </list>
     <ignored path="dynamic-allocator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -98,8 +94,8 @@
       <file leaf-file-name="Lab3_62661627_37901666_91044866.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="480">
-              <caret line="32" column="73" selection-start-line="32" selection-start-column="73" selection-end-line="32" selection-end-column="73" />
+            <state relative-caret-position="225">
+              <caret line="376" column="51" selection-start-line="376" selection-start-column="51" selection-end-line="376" selection-end-column="51" />
               <folding>
                 <element signature="e#144#162#0" expanded="true" />
               </folding>
@@ -415,7 +411,7 @@
           <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="11" />
+      <option name="time" value="12" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -496,8 +492,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="32" column="73" selection-start-line="32" selection-start-column="73" selection-end-line="32" selection-end-column="73" />
+        <state relative-caret-position="225">
+          <caret line="376" column="51" selection-start-line="376" selection-start-column="51" selection-end-line="376" selection-end-column="51" />
           <folding>
             <element signature="e#144#162#0" expanded="true" />
           </folding>

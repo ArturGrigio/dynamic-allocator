@@ -30,18 +30,14 @@
 #define HDRP(bp)       ((char *)(bp) - WSIZE)
 #define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
 #define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
-#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) 
-
+#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
 
 /* Global variables */
 char *mem_heap;     /* Points to first byte of heap */
 char *mem_brk;      /* Points to last byte of heap plus 1 */
 char *mem_max_addr; /* Max legal heap addr plus 1*/
-
 char *heap_listp = 0;  /* Pointer to first block */
-extern int place_pol;
 int place_pol = 0;
-
 int alloc_n = 0;
 char *first_block = 0;
 char *alloc_block[MAX_HEAP];
@@ -55,17 +51,14 @@ void *coalesce(void *bp);
 void printblock(void *bp);
 void checkheap(int verbose);
 void checkblock(void *bp);
-
 void *allocate(size_t size);
 void freeblock(int bnum);
 void blocklist(void);
 void writeheap(int bnum, char letter, int copies);
 void printheap(int bnum, size_t size);
-
 int eval(char *cmdline);
 int program_command(char **argv);
 int parseline(char *buf, char **argv);
-
 void mem_init(void);
 void *mem_sbrk(int incr);
 void mem_deinit(void);
@@ -76,12 +69,7 @@ void *mm_malloc(size_t size);
 void mm_free(void *bp);
 /* $end mallocinterface */
 
-//void mm_checkheap(int verbose);
-//void *mm_realloc(void *ptr, size_t size);
-
-
-// MAIN LIBRARY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+// MAIN LIBRARY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int main(){
 
 	mem_init();
@@ -96,98 +84,6 @@ int main(){
 
 	mem_deinit();
 } // end main
-
-
-int eval(char *cmdline) {
-	char *argv[MAXARGS];
-	char buf[MAXLINE];
-	int bg;
-
-	/* Argument list*/
-	strcpy(buf, cmdline);
-	bg = parseline(buf, argv);
-	if (argv[0] == NULL)
-		return 1;   /* Ignore empty lines */
-	if (!program_command(argv))
-		return 0;
-
-	return 1;
-}
-
-
-int program_command(char **argv) {
-	if (strcmp(argv[0], "allocate") == 0){
-		if(argv[1] == NULL)
-			printf("Error: no arguments for allocate\n");
-		else {
-			int block_size = atoi(argv[1]);
-			alloc_block[alloc_n] = allocate(block_size);
-		}
-		return 1;
-	} else if (strcmp(argv[0], "free") == 0){
-		if(argv[1] == NULL)
-			printf("Error: no arguments for free\n");
-		else {
-			int block_number = atoi(argv[1]);
-			freeblock(block_number);
-		}
-		return 1;
-	} else if (strcmp(argv[0], "blocklist") == 0){
-		blocklist();
-		return 1;
-	} else if (strcmp(argv[0], "writeheap") == 0){
-		if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL)
-			printf("Error: wrong arguments for writeheap\n");
-		else {
-			int block_number = atoi(argv[1]);
-			char letter = argv[2][0];
-			int copies = atoi(argv[3]);
-			writeheap(block_number, letter, copies);
-		}
-		return 1;
-	} else if(strcmp(argv[0], "printheap") == 0){
-		if (argv[1] == NULL || argv[2] == NULL)
-			printf("Error: wrong arguments for printheap\n");
-		else {
-			int block_number = atoi(argv[1]);
-			size_t size = atoi(argv[2]);
-			printheap(block_number, size);
-		}
-		return 1;
-	} else if (strcmp(argv[0], "quit") == 0) { /* quit command */
-		return 0;
-	} else {
-		printf("%s: Command not found.\n", argv[0]);
-		return 1;
-	}
-
-}
-
-/* parseline - Parse the command line and build the argv array */
-int parseline(char *buf, char **argv) {
-	char *delim;
-	int argc;
-	int bg;
-	buf[strlen(buf)-1] = ' ';
-	while (*buf && (*buf == ' ' ))
-		buf++;
-	/* Build the argv list */
-	argc = 0;
-	while ((delim = strchr(buf, ' '))) {
-		argv[argc++] = buf;
-		*delim = '\0';
-		buf = delim + 1;
-		while (*buf && (*buf == ' '))
-			buf++;
-	}
-	argv[argc] = NULL;
-	if (argc == 0)
-		return 1;
-	if ((bg = (*argv[argc-1] == '&')) != 0)
-		argv[--argc] = NULL;
-	return bg;
-}
-
 
 void *allocate(size_t size) {
 	void *bp;
@@ -250,7 +146,96 @@ void printheap(int bnum, size_t size) {
 	printf("\n");
 }
 
-// CODE FROM BOOK FOR memlib.c !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Command Line Reading from Lab2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int eval(char *cmdline) {
+	char *argv[MAXARGS];
+	char buf[MAXLINE];
+	int bg;
+
+	/* Argument list*/
+	strcpy(buf, cmdline);
+	bg = parseline(buf, argv);
+	if (argv[0] == NULL)
+		return 1;   /* Ignore empty lines */
+	if (!program_command(argv))
+		return 0;
+
+	return 1;
+}
+
+int program_command(char **argv) {
+	if (strcmp(argv[0], "allocate") == 0){
+		if(argv[1] == NULL)
+			printf("Error: no arguments for allocate\n");
+		else {
+			int block_size = atoi(argv[1]);
+			alloc_block[alloc_n] = allocate(block_size);
+		}
+		return 1;
+	} else if (strcmp(argv[0], "free") == 0){
+		if(argv[1] == NULL)
+			printf("Error: no arguments for free\n");
+		else {
+			int block_number = atoi(argv[1]);
+			freeblock(block_number);
+		}
+		return 1;
+	} else if (strcmp(argv[0], "blocklist") == 0){
+		blocklist();
+		return 1;
+	} else if (strcmp(argv[0], "writeheap") == 0){
+		if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL)
+			printf("Error: wrong arguments for writeheap\n");
+		else {
+			int block_number = atoi(argv[1]);
+			char letter = argv[2][0];
+			int copies = atoi(argv[3]);
+			writeheap(block_number, letter, copies);
+		}
+		return 1;
+	} else if(strcmp(argv[0], "printheap") == 0){
+		if (argv[1] == NULL || argv[2] == NULL)
+			printf("Error: wrong arguments for printheap\n");
+		else {
+			int block_number = atoi(argv[1]);
+			size_t size = atoi(argv[2]);
+			printheap(block_number, size);
+		}
+		return 1;
+	} else if (strcmp(argv[0], "quit") == 0) { /* quit command */
+		return 0;
+	} else {
+		printf("%s: Command not found.\n", argv[0]);
+		return 1;
+	}
+}
+
+/* parseline - Parse the command line and build the argv array */
+int parseline(char *buf, char **argv) {
+	char *delim;
+	int argc;
+	int bg;
+	buf[strlen(buf)-1] = ' ';
+	while (*buf && (*buf == ' ' ))
+		buf++;
+	/* Build the argv list */
+	argc = 0;
+	while ((delim = strchr(buf, ' '))) {
+		argv[argc++] = buf;
+		*delim = '\0';
+		buf = delim + 1;
+		while (*buf && (*buf == ' '))
+			buf++;
+	}
+	argv[argc] = NULL;
+	if (argc == 0)
+		return 1;
+	if ((bg = (*argv[argc-1] == '&')) != 0)
+		argv[--argc] = NULL;
+	return bg;
+}
+
+// CODE FROM BOOK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 void mem_init(void)
 {
@@ -274,7 +259,6 @@ void *mem_sbrk(int incr)
 
 void mem_deinit(void) { free(mem_heap); }
 
-// CODE FROM BOOK FOR mm.c !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int mm_init(void)
 {
 	/* Create the initial empty heap */
@@ -387,12 +371,12 @@ void *extend_heap(size_t words)
 
 	size = words * WSIZE; //line:vm:mm:beginextend
 	if ((long)(bp = mem_sbrk(size)) == -1)
-		return NULL;                                        //line:vm:mm:endextend
+		return NULL;
 
 	/* Initialize free block header/footer and the epilogue header */
-	PUT(HDRP(bp), PACK(size, 0));         /* Free block header */   //line:vm:mm:freeblockhdr
-	PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */   //line:vm:mm:freeblockftr
-	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */ //line:vm:mm:newepihdr
+	PUT(HDRP(bp), PACK(size, 0));         /* Free block header */
+	PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */
+	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
 
 	/* Coalesce if the previous block was free, 1 TA SAID IT'S OK, REQ DOC SAYS NOTHING ABOUT IT */
 	return coalesce(bp);
