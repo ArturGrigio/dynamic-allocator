@@ -1,7 +1,6 @@
 // Grigoryan, Artur: 62661627
 // Chistyakova, Anna: 37901666
-//
-
+// Pandya, Malav: 91044866
 
 //We used some of the textbook code and lecture notes
 
@@ -23,38 +22,39 @@
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 
 // PACK GET PUT ... FROM BOOK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#define PACK(size, alloc)  ((size) | (alloc)) //line:vm:mm:pack
-#define GET(p)       (*(unsigned int *)(p))            //line:vm:mm:get
-#define PUT(p, val)  (*(unsigned int *)(p) = (val))    //line:vm:mm:put
-#define GET_SIZE(p)  (GET(p) & ~0x3)                   //line:vm:mm:getsize
-#define GET_ALLOC(p) (GET(p) & 0x1)                    //line:vm:mm:getalloc
-#define HDRP(bp)       ((char *)(bp) - WSIZE)                      //line:vm:mm:hdrp
-#define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE) //line:vm:mm:ftrp
-#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE))) //line:vm:mm:nextblkp
-#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) //line:vm:mm:prevblkp
+#define PACK(size, alloc)  ((size) | (alloc))
+#define GET(p)       (*(unsigned int *)(p))
+#define PUT(p, val)  (*(unsigned int *)(p) = (val))
+#define GET_SIZE(p)  (GET(p) & ~0x3)
+#define GET_ALLOC(p) (GET(p) & 0x1)
+#define HDRP(bp)       ((char *)(bp) - WSIZE)
+#define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) 
 
 
 /* Global variables */
-static char *mem_heap;     /* Points to first byte of heap */
-static char *mem_brk;      /* Points to last byte of heap plus 1 */
-static char *mem_max_addr; /* Max legal heap addr plus 1*/
+char *mem_heap;     /* Points to first byte of heap */
+char *mem_brk;      /* Points to last byte of heap plus 1 */
+char *mem_max_addr; /* Max legal heap addr plus 1*/
 
-static char *heap_listp = 0;  /* Pointer to first block */
+char *heap_listp = 0;  /* Pointer to first block */
 extern int place_pol;
 int place_pol = 0;
 
-static int alloc_n = 0;
-static char *first_block = 0;
-static char *alloc_block[MAX_HEAP];
+int alloc_n = 0;
+char *first_block = 0;
+char *alloc_block[MAX_HEAP];
+int freed_block[MAX_HEAP];
 
 /* Function prototypes for internal helper routines */
-static void *extend_heap(size_t words);
-static void place(void *bp, size_t asize);
-static void *find_fit(size_t asize);
-static void *coalesce(void *bp);
-static void printblock(void *bp);
-static void checkheap(int verbose);
-static void checkblock(void *bp);
+void *extend_heap(size_t words);
+void place(void *bp, size_t asize);
+void *find_fit(size_t asize);
+void *coalesce(void *bp);
+void printblock(void *bp);
+void checkheap(int verbose);
+void checkblock(void *bp);
 
 void *allocate(size_t size);
 void freeblock(int bnum);
@@ -202,7 +202,11 @@ void freeblock(int bnum) {
 		printf("Invalid Block Number\n");
 		return;
 	}
-	mm_free(alloc_block[bnum-1]);
+	if(freed_block[bnum] == 0) {
+		mm_free(alloc_block[bnum]);
+		freed_block[bnum] = 1;
+	} else
+		printf("Block %i has already been freed\n", bnum);
 }
 
 void blocklist(void) {
@@ -302,8 +306,8 @@ void *mm_malloc(size_t size)
 		return NULL;
 
 	/* Adjust block size to include overhead and alignment reqs. */
-	if (size <= WSIZE)                                          //line:vm:mm:sizeadjust1
-		asize = 3*WSIZE;                                        //line:vm:mm:sizeadjust2
+	if (size <= WSIZE)
+		asize = 3*WSIZE;
 	else
 		if (size % WSIZE != 0)
 			asize = (size / WSIZE) * WSIZE + 2*WSIZE + WSIZE;
@@ -311,18 +315,18 @@ void *mm_malloc(size_t size)
 			asize = (size / WSIZE) * WSIZE + 2*WSIZE;
 
 	/* Search the free list for a fit */
-	if ((bp = find_fit(asize)) != NULL) {  //line:vm:mm:findfitcall
-		place(bp, asize);                  //line:vm:mm:findfitplace
+	if ((bp = find_fit(asize)) != NULL) {
+		place(bp, asize);
 		return bp;
 	}
 
-	/* No fit found. Well... youre fucked */
+	/* No fit found. */
 	printf("Out of Memory\n");
 	return NULL;
-	//	extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
+	//	extendsize = MAX(asize,CHUNKSIZE);
 	//	if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
-	//		return NULL;                                  //line:vm:mm:growheap2
-	//	place(bp, asize);                                 //line:vm:mm:growheap3
+	//		return NULL;
+	//	place(bp, asize);
 	//	return bp;
 }
 
@@ -342,7 +346,7 @@ void mm_free(void *bp)
 	coalesce(bp);
 }
 
-static void *coalesce(void *bp)
+void *coalesce(void *bp)
 {
 	size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
 	size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
@@ -375,42 +379,8 @@ static void *coalesce(void *bp)
 
 	return bp;
 }
-//
-//void *mm_realloc(void *ptr, size_t size)
-//{
-//	size_t oldsize;
-//	void *newptr;
-//
-//	/* If size == 0 then this is just free, and we return NULL. */
-//	if(size == 0) {
-//		mm_free(ptr);
-//		return 0;
-//	}
-//
-//	/* If oldptr is NULL, then this is just malloc. */
-//	if(ptr == NULL) {
-//		return mm_malloc(size);
-//	}
-//
-//	newptr = mm_malloc(size);
-//
-//	/* If realloc() fails the original block is left untouched  */
-//	if(!newptr) {
-//		return 0;
-//	}
-//
-//	/* Copy the old data. */
-//	oldsize = GET_SIZE(HDRP(ptr));
-//	if(size < oldsize) oldsize = size;
-//	memcpy(newptr, ptr, oldsize);
-//
-//	/* Free the old block. */
-//	mm_free(ptr);
-//
-//	return newptr;
-//}
 
-static void *extend_heap(size_t words)
+void *extend_heap(size_t words)
 {
 	char *bp;
 	size_t size;
@@ -428,7 +398,7 @@ static void *extend_heap(size_t words)
 	return coalesce(bp);
 }
 
-static void place(void *bp, size_t asize)
+void place(void *bp, size_t asize)
 {
 	size_t csize = GET_SIZE(HDRP(bp));
 
@@ -445,7 +415,7 @@ static void place(void *bp, size_t asize)
 	}
 }
 
-static void *find_fit(size_t asize)
+void *find_fit(size_t asize)
 {
 	if (place_pol == 0) {
 		/* First fit search */
@@ -473,7 +443,7 @@ static void *find_fit(size_t asize)
 	return NULL; /* No fit */
 }
 
-static void printblock(void *bp)
+void printblock(void *bp)
 {
 	size_t hsize, halloc, fsize, falloc;
 
@@ -487,13 +457,9 @@ static void printblock(void *bp)
 		printf("%p: EOL\n", bp);
 		return;
 	}
-
-	/*  printf("%p: header: [%p:%c] footer: [%p:%c]\n", bp,
-	 hsize, (halloc ? 'a' : 'f'),
-	 fsize, (falloc ? 'a' : 'f')); */
 }
 
-static void checkblock(void *bp)
+void checkblock(void *bp)
 {
 	if ((size_t)bp % 4)
 		printf("Error: %p is not word aligned\n", bp);

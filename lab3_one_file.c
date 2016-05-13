@@ -1,5 +1,6 @@
 // Artur Grigoryan (62661627)
-//
+// Anya Chistyakova
+// Malav Pandya ()
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,14 +22,14 @@
 
 // PACK GET PUT ... FROM BOOK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define PACK(size, alloc)  ((size) | (alloc)) //line:vm:mm:pack
-#define GET(p)       (*(unsigned int *)(p))            //line:vm:mm:get
-#define PUT(p, val)  (*(unsigned int *)(p) = (val))    //line:vm:mm:put
-#define GET_SIZE(p)  (GET(p) & ~0x3)                   //line:vm:mm:getsize
-#define GET_ALLOC(p) (GET(p) & 0x1)                    //line:vm:mm:getalloc
-#define HDRP(bp)       ((char *)(bp) - WSIZE)                      //line:vm:mm:hdrp
-#define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE) //line:vm:mm:ftrp
-#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE))) //line:vm:mm:nextblkp
-#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) //line:vm:mm:prevblkp
+#define GET(p)       (*(unsigned int *)(p))
+#define PUT(p, val)  (*(unsigned int *)(p) = (val))
+#define GET_SIZE(p)  (GET(p) & ~0x3)
+#define GET_ALLOC(p) (GET(p) & 0x1)
+#define HDRP(bp)       ((char *)(bp) - WSIZE)
+#define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+#define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+#define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
 
 
 /* Private global variables */
@@ -38,7 +39,6 @@ static char *mem_max_addr; /* Max legal heap addr plus 1*/
 
 /* Global variables */
 static char *heap_listp = 0;  /* Pointer to first block */
-extern int place_pol;
 
 /* Function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -102,11 +102,11 @@ void *mem_heap_hi() { return (void *)(mem_brk - 1); }
 size_t mem_heapsize() { return (size_t)((void *)mem_brk - (void *)mem_heap); }
 size_t mem_pagesize() { return (size_t)getpagesize(); }
 
-// CODE FROM BOOK FOR mm.c !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// CODE FROM BOOK FOR mm FUNCTIONS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int mm_init(void)
 {
 	/* Create the initial empty heap */
-	if ((heap_listp = mem_sbrk(3*WSIZE)) == (void *)-1) //line:vm:mm:begininit
+	if ((heap_listp = mem_sbrk(3*WSIZE)) == (void *)-1)
 		return -1;
 	PUT(heap_listp, PACK(DSIZE, 1)); /* Prologue header */
 	PUT(heap_listp + (1*WSIZE), PACK(DSIZE, 1)); /* Prologue footer */
@@ -134,8 +134,8 @@ void *mm_malloc(size_t size)
 		return NULL;
 
 	/* Adjust block size to include overhead and alignment reqs. */
-	if (size <= WSIZE)                                          //line:vm:mm:sizeadjust1
-		asize = 3*WSIZE;                                        //line:vm:mm:sizeadjust2
+	if (size <= WSIZE)
+		asize = 3*WSIZE;
 	else
 		if (size % WSIZE != 0)
 			asize = (size / WSIZE) * WSIZE + 2*WSIZE + WSIZE;
@@ -143,18 +143,18 @@ void *mm_malloc(size_t size)
 			asize = (size / WSIZE) * WSIZE + 2*WSIZE;
 
 	/* Search the free list for a fit */
-	if ((bp = find_fit(asize)) != NULL) {  //line:vm:mm:findfitcall
-		place(bp, asize);                  //line:vm:mm:findfitplace
+	if ((bp = find_fit(asize)) != NULL) {
+		place(bp, asize);
 		return bp;
 	}
 
 	/* No fit found. Well... youre fucked */
 	printf("Out of Memory\n");
 	return NULL;
-//	extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
+//	extendsize = MAX(asize,CHUNKSIZE);
 //	if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
-//		return NULL;                                  //line:vm:mm:growheap2
-//	place(bp, asize);                                 //line:vm:mm:growheap3
+//		return NULL;
+//	place(bp, asize);
 //	return bp;
 }
 
@@ -254,12 +254,12 @@ static void *extend_heap(size_t words)
 
 	size = words * WSIZE; //line:vm:mm:beginextend
 	if ((long)(bp = mem_sbrk(size)) == -1)
-		return NULL;                                        //line:vm:mm:endextend
+		return NULL;
 
 	/* Initialize free block header/footer and the epilogue header */
-	PUT(HDRP(bp), PACK(size, 0));         /* Free block header */   //line:vm:mm:freeblockhdr
-	PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */   //line:vm:mm:freeblockftr
-	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */ //line:vm:mm:newepihdr
+	PUT(HDRP(bp), PACK(size, 0));         /* Free block header */
+	PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */
+	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
 
 	/* Coalesce if the previous block was free, 1 TA SAID IT'S OK, REQ DOC SAYS NOTHING ABOUT IT */
 	return coalesce(bp);
