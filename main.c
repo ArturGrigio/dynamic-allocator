@@ -143,7 +143,8 @@ int parseline(char *buf, char **argv) {
 void *allocate(size_t size) {
     void *bp;
     bp = mm_malloc(size);
-    printf("%d\n", ++alloc_n);
+    if(bp)
+        printf("%d\n", ++alloc_n);
     return bp;
 }
 
@@ -161,7 +162,7 @@ void blocklist(void) {
     for (bp = first_block; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
         printf("%-5d %-11s %-#15x %-#15x\n", GET_SIZE(HDRP(bp)),
                GET_ALLOC(HDRP(bp)) ? "yes" : "no",
-               HDRP(bp), FTRP(bp)+3);
+               HDRP(bp), FTRP(bp)+4);
 }
 
 void writeheap(int bnum, char letter, int copies) {

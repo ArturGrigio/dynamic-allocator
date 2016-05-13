@@ -97,11 +97,12 @@ void *mm_malloc(size_t size)
     }
 
     /* No fit found. Get more memory and place the block */
-    extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
-    if ((bp = extend_heap(extendsize/WSIZE)) == NULL)  
-	return NULL;                                  //line:vm:mm:growheap2
-    place(bp, asize);                                 //line:vm:mm:growheap3
-    return bp;
+//    extendsize = MAX(asize,CHUNKSIZE);                 //line:vm:mm:growheap1
+//    if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
+//	return NULL;                                  //line:vm:mm:growheap2
+//    place(bp, asize);                                 //line:vm:mm:growheap3
+//    return bp;
+    printf("Out of Memory\n");
 } 
 
 /* 
