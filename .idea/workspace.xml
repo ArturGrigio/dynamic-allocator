@@ -84,8 +84,6 @@
               <caret line="31" column="72" selection-start-line="31" selection-start-column="72" selection-end-line="31" selection-end-column="72" />
               <folding>
                 <element signature="e#70#88#0" expanded="true" />
-                <marker date="1463167777000" expanded="true" signature="4822:5661" placeholder="{...}" />
-                <marker date="1463167777000" expanded="true" signature="6349:6860" placeholder="{...}" />
               </folding>
             </state>
           </provider>
@@ -94,8 +92,8 @@
       <file leaf-file-name="Lab3_62661627_37901666_91044866.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="376" column="51" selection-start-line="376" selection-start-column="51" selection-end-line="376" selection-end-column="51" />
+            <state relative-caret-position="607">
+              <caret line="147" column="5" selection-start-line="147" selection-start-column="5" selection-end-line="147" selection-end-column="5" />
               <folding>
                 <element signature="e#144#162#0" expanded="true" />
               </folding>
@@ -377,7 +375,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
@@ -470,18 +468,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lab3_one_file.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="31" column="72" selection-start-line="31" selection-start-column="72" selection-end-line="31" selection-end-column="72" />
-          <folding>
-            <element signature="e#70#88#0" expanded="true" />
-            <marker date="1463167777000" expanded="true" signature="4822:5661" placeholder="{...}" />
-            <marker date="1463167777000" expanded="true" signature="6349:6860" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -490,10 +476,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lab3_one_file.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="31" column="72" selection-start-line="31" selection-start-column="72" selection-end-line="31" selection-end-column="72" />
+          <folding>
+            <element signature="e#70#88#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Lab3_62661627_37901666_91044866.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="376" column="51" selection-start-line="376" selection-start-column="51" selection-end-line="376" selection-end-column="51" />
+        <state relative-caret-position="607">
+          <caret line="147" column="5" selection-start-line="147" selection-start-column="5" selection-end-line="147" selection-end-column="5" />
           <folding>
             <element signature="e#144#162#0" expanded="true" />
           </folding>

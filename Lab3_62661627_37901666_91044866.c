@@ -115,7 +115,7 @@ void blocklist(void) {
 }
 
 void writeheap(int bnum, char letter, int copies) {
-	if (bnum <= 0 || bnum > alloc_n || !GET_ALLOC(HDRP(alloc_block[bnum]))) {
+	if (bnum <= 0 || bnum > alloc_n || !GET_ALLOC(HDRP(alloc_block[bnum])) || freed_block[bnum] != 0) {
 		printf("Invalid Block Number\n");
 		return;
 	}
@@ -127,23 +127,22 @@ void writeheap(int bnum, char letter, int copies) {
 }
 
 void printheap(int bnum, size_t size) {
-	if (bnum <= 0 || bnum > alloc_n) {
+	if (bnum <= 0 || bnum > alloc_n || freed_block[bnum] != 0) {
 		printf("Invalid Block Number\n");
 		return;
 	}
-	int i;
-	void *p;
-	void *bp = alloc_block[bnum];
-	for (p = bp, i = 0; i < size && GET_SIZE(HDRP(bp)) > 0; ++i){
-		if(p == FTRP(bp)){
-			bp = NEXT_BLKP(bp);
-			p = bp;
-		}
-		printf("%c", GET(p));
-		++p;
-	}
-
-	printf("\n");
+    int i;
+    void *p;
+    void *bp = alloc_block[bnum];
+    for (p = bp, i = 0; i < size && GET_SIZE(HDRP(bp)) > 0; ++i){
+        if(p == FTRP(bp)){
+            bp = NEXT_BLKP(bp);
+            p = bp;
+        }
+        printf("%c", GET(p));
+        ++p;
+    }   
+    printf("\n");
 }
 
 // Command Line Reading from Lab2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -169,7 +168,7 @@ int program_command(char **argv) {
 			printf("Error: no arguments for allocate\n");
 		else {
 			int block_size = atoi(argv[1]);
-			alloc_block[alloc_n] = allocate(block_size);
+			alloc_block[alloc_n+1] = allocate(block_size);
 		}
 		return 1;
 	} else if (strcmp(argv[0], "free") == 0){
