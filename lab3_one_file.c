@@ -1,3 +1,6 @@
+// Artur Grigoryan (62661627)
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

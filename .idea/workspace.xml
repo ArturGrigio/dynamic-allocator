@@ -12,9 +12,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a0eef9e-218f-40f9-a7f6-7280cd340f57" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dynamic-allocator.iml" afterPath="$PROJECT_DIR$/.idea/dynamic-allocator.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lab3_one_file.c" afterPath="$PROJECT_DIR$/lab3_one_file.c" />
     </list>
     <ignored path="dynamic-allocator.iws" />
@@ -93,10 +90,10 @@
       <file leaf-file-name="lab3_one_file.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lab3_one_file.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6090">
-              <caret line="406" column="6" selection-start-line="406" selection-start-column="6" selection-end-line="406" selection-end-column="6" />
+            <state relative-caret-position="15">
+              <caret line="1" column="2" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="2" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#34#52#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -309,10 +306,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lab3_one_file.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6090">
-          <caret line="406" column="6" selection-start-line="406" selection-start-column="6" selection-end-line="406" selection-end-column="6" />
+        <state relative-caret-position="15">
+          <caret line="1" column="2" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="2" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#34#52#0" expanded="true" />
           </folding>
         </state>
       </provider>
